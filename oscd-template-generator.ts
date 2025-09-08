@@ -17,6 +17,7 @@ import { TreeGrid, TreeSelection } from '@openenergytools/tree-grid';
 
 import { MdFab } from '@scopedelement/material-web/fab/MdFab.js';
 import { MdIcon } from '@scopedelement/material-web/icon/MdIcon.js';
+import { MdIconButton } from '@scopedelement/material-web/iconbutton/MdIconButton.js';
 import { MdFilledSelect } from '@scopedelement/material-web/select/MdFilledSelect.js';
 import { MdSelectOption } from '@scopedelement/material-web/select/MdSelectOption.js';
 import { MdFilledSelect as MdOutlinedSelect } from '@scopedelement/material-web/select/MdOutlineSelect.js';
@@ -28,6 +29,7 @@ import { Snackbar } from './components/snackbar.js';
 import { CreateDataObjectDialog } from './components/create-do-dialog.js';
 import { DescriptionDialog } from './components/description-dialog.js';
 import { PreviewDialog } from './components/preview-dialog.js';
+import { SettingsDialog } from './components/settings-dialog.js';
 
 import { cdClasses, lnClass74 } from './constants.js';
 import { NodeData, getSelectionByPath, processEnums } from './foundation.js';
@@ -44,6 +46,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
     'md-outlined-select': MdOutlinedSelect,
     'md-fab': MdFab,
     'md-icon': MdIcon,
+    'md-icon-button': MdIconButton,
     'md-outlined-button': MdOutlinedButton,
     'md-dialog': MdDialog,
     'md-outlined-text-field': MdOutlinedTextField,
@@ -51,6 +54,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
     'create-data-object-dialog': CreateDataObjectDialog,
     'description-dialog': DescriptionDialog,
     'preview-dialog': PreviewDialog,
+    'settings-dialog': SettingsDialog,
   };
 
   @property({ attribute: false })
@@ -70,6 +74,9 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
 
   @query('preview-dialog')
   previewDialog!: PreviewDialog;
+
+  @query('settings-dialog')
+  settingsDialog!: SettingsDialog;
 
   @state()
   get selection(): TreeSelection {
@@ -292,18 +299,23 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
   render() {
     return html`<div class="container">
         <div class="btn-wrapper">
-          <md-outlined-button @click=${() => this.createDOdialog.show()}>
-            <md-icon slot="icon">add</md-icon>
-            Add Data Object
-          </md-outlined-button>
-          <md-filled-select @input=${this.reset}>
-            ${lnClass74.map(
-              lNodeType =>
-                html`<md-select-option value=${lNodeType}
-                  >${lNodeType}</md-select-option
-                >`
-            )}
-          </md-filled-select>
+          <div class="btn-left">
+            <md-outlined-button @click=${() => this.createDOdialog.show()}>
+              <md-icon slot="icon">add</md-icon>
+              Add Data Object
+            </md-outlined-button>
+            <md-filled-select @input=${this.reset}>
+              ${lnClass74.map(
+                lNodeType =>
+                  html`<md-select-option value=${lNodeType}
+                    >${lNodeType}</md-select-option
+                  >`
+              )}
+            </md-filled-select>
+          </div>
+          <md-icon-button @click=${() => this.settingsDialog.show()}>
+            <md-icon>settings</md-icon>
+          </md-icon-button>
         </div>
         <tree-grid @node-selected=${this.handleNodeSelected}></tree-grid>
       </div>
@@ -333,6 +345,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
         .tree=${this.treeUI?.tree}
         .lNodeType=${this.lNodeType}
       ></preview-dialog>
+      <settings-dialog></settings-dialog>
       <oscd-snackbar
         .message=${this.snackbarMessage}
         .type=${this.snackbarType}
@@ -388,7 +401,14 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
 
     .btn-wrapper {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .btn-left {
+      display: flex;
       gap: 12px;
     }
   `;
