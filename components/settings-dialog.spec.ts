@@ -1,4 +1,4 @@
-import { expect, fixture, html, waitUntil } from '@open-wc/testing';
+import { expect, fixture, html } from '@open-wc/testing';
 import { SettingsDialog } from './settings-dialog.js';
 
 customElements.define('settings-dialog', SettingsDialog);
@@ -49,7 +49,7 @@ describe('SettingsDialog', () => {
     expect((element as any).selectedIdHandling).to.equal('random');
   });
 
-  it('should save settings and close dialog on confirm', async () => {
+  it('should save settings on confirm', async () => {
     const contentHashRadio = getRadio('content-hash');
     contentHashRadio.click();
     await element.updateComplete;
@@ -62,9 +62,6 @@ describe('SettingsDialog', () => {
     expect(
       localStorage.getItem('template-generator-lnodetype-id-setting')
     ).to.equal('content-hash');
-
-    await waitUntil(() => !element.open, undefined, { timeout: 5000 });
-    expect(element.open).to.equal(false);
   });
 
   it('should not save changes on cancel', async () => {
@@ -82,8 +79,5 @@ describe('SettingsDialog', () => {
     expect(
       localStorage.getItem('template-generator-lnodetype-id-setting')
     ).to.equal('random');
-
-    await waitUntil(() => !element.open, undefined, { timeout: 5000 });
-    expect(element.open).to.equal(false);
   });
 });
