@@ -118,6 +118,31 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
   @state()
   snackbarType: 'success' | 'error' = 'success';
 
+  // eslint-disable-next-line class-methods-use-this
+  get isProMode(): boolean {
+    return localStorage.getItem('mode') === 'pro';
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get lNodeTypeIdSetting(): string {
+    return (
+      localStorage.getItem('template-generator-lnodetype-id-setting') ||
+      'random'
+    );
+  }
+
+  private generateRandomId(): string {
+    let id: string;
+    do {
+      id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.floor(Math.random() * 16);
+        const v = c === 'x' ? r : (r % 4) + 8;
+        return v.toString(16);
+      });
+    } while (this.doc?.querySelector(`LNodeType[id="${id}"]`));
+    return id;
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     lastSelection = this.selection;
@@ -139,12 +164,21 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
     this.autoSelectEnums();
   }
 
-  saveTemplates(description: string) {
+  saveTemplates(description: string, id?: string) {
     if (!this.doc) return;
+
+    let lNodeTypeId = id;
+
+    if (!lNodeTypeId) {
+      if (this.lNodeTypeIdSetting === 'random') {
+        lNodeTypeId = this.generateRandomId();
+      }
+    }
 
     const inserts = insertSelectedLNodeType(this.doc, this.treeUI.selection, {
       class: this.lNodeType,
       ...(description !== undefined && { desc: description }),
+      ...(lNodeTypeId !== undefined && { id: lNodeTypeId }),
       data: this.treeUI.tree as LNodeDescription,
     });
 
@@ -313,9 +347,11 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
               )}
             </md-filled-select>
           </div>
-          <md-icon-button @click=${() => this.settingsDialog.show()}>
-            <md-icon>settings</md-icon>
-          </md-icon-button>
+          ${this.isProMode
+            ? html`<md-icon-button @click=${() => this.settingsDialog.show()}>
+                <md-icon>settings</md-icon>
+              </md-icon-button>`
+            : html``}
         </div>
         <tree-grid @node-selected=${this.handleNodeSelected}></tree-grid>
       </div>
@@ -338,7 +374,9 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
         .onConfirm=${this.handleDOConfirm}
       ></create-data-object-dialog>
       <description-dialog
-        .onConfirm=${(description: string) => this.saveTemplates(description)}
+        .doc=${this.doc}
+        .onConfirm=${(description: string, id?: string) =>
+          this.saveTemplates(description, id)}
         .onCancel=${() => this.descriptionDialog.close()}
       ></description-dialog>
       <preview-dialog
