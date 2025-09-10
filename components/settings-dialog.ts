@@ -74,7 +74,7 @@ export class SettingsDialog extends ScopedElementsMixin(LitElement) {
   render() {
     return html`
       <md-dialog @closed=${() => this.dialog?.close()}>
-        <div slot="headline">LNodeType id Handling</div>
+        <div slot="headline">LNodeType id handling</div>
         <div slot="content">
           <div class="radio-group">
             <label class="radio-item">

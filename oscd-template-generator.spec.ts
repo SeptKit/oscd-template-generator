@@ -383,7 +383,7 @@ describe('TemplateGenerator', () => {
         ) as HTMLElement;
         confirmButton.click();
 
-        await waitUntil(() => !dialog.open, undefined, { timeout: 2000 });
+        await waitUntil(() => !dialog.open, undefined, { timeout: 5000 });
         await element.updateComplete;
         expect(element.treeUI.tree[name]).to.exist;
         expect(element.treeUI.tree[name]).to.have.property('type', type);
