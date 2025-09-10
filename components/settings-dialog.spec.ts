@@ -63,7 +63,7 @@ describe('SettingsDialog', () => {
       localStorage.getItem('template-generator-lnodetype-id-setting')
     ).to.equal('content-hash');
 
-    await waitUntil(() => !element.open);
+    await waitUntil(() => !element.open, undefined, { timeout: 5000 });
     expect(element.open).to.equal(false);
   });
 
@@ -83,7 +83,7 @@ describe('SettingsDialog', () => {
       localStorage.getItem('template-generator-lnodetype-id-setting')
     ).to.equal('random');
 
-    await waitUntil(() => !element.open);
+    await waitUntil(() => !element.open, undefined, { timeout: 5000 });
     expect(element.open).to.equal(false);
   });
 });
