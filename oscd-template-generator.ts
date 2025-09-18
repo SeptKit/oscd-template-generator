@@ -134,11 +134,15 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
   private generateRandomId(): string {
     let id: string;
     do {
-      id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = Math.floor(Math.random() * 16);
-        const v = c === 'x' ? r : (r % 4) + 8;
-        return v.toString(16);
-      });
+      const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+        /[xy]/g,
+        c => {
+          const r = Math.floor(Math.random() * 16);
+          const v = c === 'x' ? r : (r % 4) + 8;
+          return v.toString(16);
+        }
+      );
+      id = `${this.lNodeType}€${uuid}`;
     } while (this.doc?.querySelector(`LNodeType[id="${id}"]`));
     return id;
   }
@@ -333,33 +337,34 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
   render() {
     return html`<div class="container">
         <div class="btn-wrapper">
-          <div class="btn-left">
-            <md-outlined-button @click=${() => this.createDOdialog.show()}>
-              <md-icon slot="icon">add</md-icon>
-              Add Data Object
-            </md-outlined-button>
-            <md-filled-select @input=${this.reset}>
-              ${lnClass74.map(
-                lNodeType =>
-                  html`<md-select-option value=${lNodeType}
-                    >${lNodeType}</md-select-option
-                  >`
-              )}
-            </md-filled-select>
-          </div>
-          ${this.isProMode
-            ? html`<md-icon-button @click=${() => this.settingsDialog.show()}>
-                <md-icon>settings</md-icon>
-              </md-icon-button>`
-            : html``}
+          <md-outlined-button @click=${() => this.createDOdialog.show()}>
+            <md-icon slot="icon">add</md-icon>
+            Add Data Object
+          </md-outlined-button>
+          <md-filled-select @input=${this.reset}>
+            ${lnClass74.map(
+              lNodeType =>
+                html`<md-select-option value=${lNodeType}
+                  >${lNodeType}</md-select-option
+                >`
+            )}
+          </md-filled-select>
         </div>
         <tree-grid @node-selected=${this.handleNodeSelected}></tree-grid>
       </div>
       ${this.doc
         ? html`<div class="fab-wrapper">
-            <md-fab @click=${() => this.showPreview()} title="Preview">
-              <md-icon slot="icon">preview</md-icon>
-            </md-fab>
+            <div>
+              <md-icon-button @click=${() => this.settingsDialog.show()}>
+                <md-icon>settings</md-icon>
+              </md-icon-button>
+              <md-icon-button
+                @click=${() => this.showPreview()}
+                title="Preview"
+              >
+                <md-icon>preview</md-icon>
+              </md-icon-button>
+            </div>
             <md-fab
               label="${this.addedLNode || 'Add Type'}"
               @click=${() => this.descriptionDialog.show()}
@@ -427,6 +432,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
 
     .fab-wrapper {
       position: fixed;
+      align-items: center;
       bottom: 32px;
       right: 32px;
       display: flex;
@@ -439,14 +445,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
 
     .btn-wrapper {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
       margin-bottom: 12px;
-      gap: 12px;
-    }
-
-    .btn-left {
-      display: flex;
       gap: 12px;
     }
   `;
