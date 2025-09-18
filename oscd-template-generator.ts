@@ -119,11 +119,6 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
   snackbarType: 'success' | 'error' = 'success';
 
   // eslint-disable-next-line class-methods-use-this
-  get isProMode(): boolean {
-    return localStorage.getItem('mode') === 'pro';
-  }
-
-  // eslint-disable-next-line class-methods-use-this
   get lNodeTypeIdSetting(): string {
     return (
       localStorage.getItem('template-generator-lnodetype-id-setting') ||

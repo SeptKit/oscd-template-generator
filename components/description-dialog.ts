@@ -74,13 +74,12 @@ export class DescriptionDialog extends ScopedElementsMixin(LitElement) {
       this.description.error = false;
     }
 
-    if (this.idField && !this.idField.checkValidity()) {
-      this.idField.errorText = 'Not a valid id.';
-      this.idField.error = true;
-      isValid = false;
-    } else if (this.idField) {
-      const { value } = this.idField;
-      if (this.doc && this.idExists(value)) {
+    if (this.idField) {
+      if (!this.idField.checkValidity()) {
+        this.idField.errorText = 'Not a valid id.';
+        this.idField.error = true;
+        isValid = false;
+      } else if (this.doc && this.idExists(this.idField.value)) {
         this.idField.errorText = 'LNodeType id already in use.';
         this.idField.error = true;
         isValid = false;
