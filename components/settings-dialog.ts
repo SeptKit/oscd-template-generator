@@ -5,10 +5,14 @@ import { query, state } from 'lit/decorators.js';
 import { MdDialog } from '@scopedelement/material-web/dialog/dialog.js';
 import { MdTextButton } from '@scopedelement/material-web/button/text-button.js';
 import { MdRadio } from '@scopedelement/material-web/radio/radio.js';
+import { STORAGE_KEY_LNODETYPE_ID_SETTING } from '../constants.js';
 
-type IdHandlingType = 'random' | 'user' | 'content-hash';
-
-const STORAGE_KEY = 'template-generator-lnodetype-id-setting';
+// eslint-disable-next-line no-shadow
+enum IdHandlingOption {
+  Random = 'random',
+  User = 'user',
+  ContentHash = 'content-hash',
+}
 
 export class SettingsDialog extends ScopedElementsMixin(LitElement) {
   static scopedElements = {
@@ -21,7 +25,7 @@ export class SettingsDialog extends ScopedElementsMixin(LitElement) {
   dialog!: MdDialog;
 
   @state()
-  private selectedIdHandling: IdHandlingType = 'random';
+  private selectedIdHandling: IdHandlingOption = IdHandlingOption.Random;
 
   connectedCallback() {
     super.connectedCallback();
@@ -29,16 +33,24 @@ export class SettingsDialog extends ScopedElementsMixin(LitElement) {
   }
 
   private loadSettings() {
-    const stored = localStorage.getItem(STORAGE_KEY) as IdHandlingType;
-    if (stored && ['random', 'user', 'content-hash'].includes(stored)) {
+    const stored = localStorage.getItem(
+      STORAGE_KEY_LNODETYPE_ID_SETTING
+    ) as IdHandlingOption;
+    if (
+      stored &&
+      Object.values(IdHandlingOption).includes(stored as IdHandlingOption)
+    ) {
       this.selectedIdHandling = stored;
     } else {
-      this.selectedIdHandling = 'random';
+      this.selectedIdHandling = IdHandlingOption.Random;
     }
   }
 
   private saveSettings() {
-    localStorage.setItem(STORAGE_KEY, this.selectedIdHandling);
+    localStorage.setItem(
+      STORAGE_KEY_LNODETYPE_ID_SETTING,
+      this.selectedIdHandling
+    );
   }
 
   get open() {
@@ -57,7 +69,7 @@ export class SettingsDialog extends ScopedElementsMixin(LitElement) {
   private handleRadioChange(event: Event) {
     const target = event.target as MdRadio;
     if (target.checked) {
-      this.selectedIdHandling = target.value as IdHandlingType;
+      this.selectedIdHandling = target.value as IdHandlingOption;
     }
   }
 

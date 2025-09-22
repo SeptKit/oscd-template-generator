@@ -5,6 +5,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { MdOutlinedTextField } from '@scopedelement/material-web/textfield/MdOutlinedTextField.js';
 import { MdDialog } from '@scopedelement/material-web/dialog/dialog.js';
 import { MdTextButton } from '@scopedelement/material-web/button/text-button.js';
+import { STORAGE_KEY_LNODETYPE_ID_SETTING } from '../constants.js';
 
 export class DescriptionDialog extends ScopedElementsMixin(LitElement) {
   static scopedElements = {
@@ -43,8 +44,7 @@ export class DescriptionDialog extends ScopedElementsMixin(LitElement) {
 
   show() {
     this.showIdField =
-      localStorage.getItem('template-generator-lnodetype-id-setting') ===
-      'user';
+      localStorage.getItem(STORAGE_KEY_LNODETYPE_ID_SETTING) === 'user';
     this.dialog?.show();
   }
 

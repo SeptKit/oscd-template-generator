@@ -31,7 +31,11 @@ import { DescriptionDialog } from './components/description-dialog.js';
 import { PreviewDialog } from './components/preview-dialog.js';
 import { SettingsDialog } from './components/settings-dialog.js';
 
-import { cdClasses, lnClass74 } from './constants.js';
+import {
+  cdClasses,
+  lnClass74,
+  STORAGE_KEY_LNODETYPE_ID_SETTING,
+} from './constants.js';
 import { NodeData, getSelectionByPath, processEnums } from './foundation.js';
 
 let lastLNodeType = 'LPHD';
@@ -120,10 +124,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
 
   // eslint-disable-next-line class-methods-use-this
   get lNodeTypeIdSetting(): string {
-    return (
-      localStorage.getItem('template-generator-lnodetype-id-setting') ||
-      'random'
-    );
+    return localStorage.getItem(STORAGE_KEY_LNODETYPE_ID_SETTING) || 'random';
   }
 
   private generateRandomId(): string {
@@ -166,12 +167,20 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
   saveTemplates(description: string, id?: string) {
     if (!this.doc) return;
 
-    let lNodeTypeId = id;
+    let lNodeTypeId: string | undefined;
 
-    if (!lNodeTypeId) {
-      if (this.lNodeTypeIdSetting === 'random') {
+    switch (this.lNodeTypeIdSetting) {
+      case 'user':
+        lNodeTypeId = id;
+        break;
+      case 'random':
         lNodeTypeId = this.generateRandomId();
-      }
+        break;
+      case 'content-hash':
+        lNodeTypeId = undefined; // Leave undefined, scl-lib will auto-generate id from content hash
+        break;
+      default:
+        lNodeTypeId = this.generateRandomId();
     }
 
     const inserts = insertSelectedLNodeType(this.doc, this.treeUI.selection, {

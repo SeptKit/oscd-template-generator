@@ -1,3 +1,6 @@
+export const STORAGE_KEY_LNODETYPE_ID_SETTING =
+  'template-generator-lnodetype-id-setting';
+
 export const cdClasses = [
   'ACD',
   'ACT',
