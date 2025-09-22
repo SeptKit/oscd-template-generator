@@ -17,6 +17,7 @@ import { TreeGrid, TreeSelection } from '@openenergytools/tree-grid';
 
 import { MdFab } from '@scopedelement/material-web/fab/MdFab.js';
 import { MdIcon } from '@scopedelement/material-web/icon/MdIcon.js';
+import { MdIconButton } from '@scopedelement/material-web/iconbutton/MdIconButton.js';
 import { MdFilledSelect } from '@scopedelement/material-web/select/MdFilledSelect.js';
 import { MdSelectOption } from '@scopedelement/material-web/select/MdSelectOption.js';
 import { MdFilledSelect as MdOutlinedSelect } from '@scopedelement/material-web/select/MdOutlineSelect.js';
@@ -28,8 +29,13 @@ import { Snackbar } from './components/snackbar.js';
 import { CreateDataObjectDialog } from './components/create-do-dialog.js';
 import { DescriptionDialog } from './components/description-dialog.js';
 import { PreviewDialog } from './components/preview-dialog.js';
+import { SettingsDialog } from './components/settings-dialog.js';
 
-import { cdClasses, lnClass74 } from './constants.js';
+import {
+  cdClasses,
+  lnClass74,
+  STORAGE_KEY_LNODETYPE_ID_SETTING,
+} from './constants.js';
 import { NodeData, getSelectionByPath, processEnums } from './foundation.js';
 
 let lastLNodeType = 'LPHD';
@@ -44,6 +50,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
     'md-outlined-select': MdOutlinedSelect,
     'md-fab': MdFab,
     'md-icon': MdIcon,
+    'md-icon-button': MdIconButton,
     'md-outlined-button': MdOutlinedButton,
     'md-dialog': MdDialog,
     'md-outlined-text-field': MdOutlinedTextField,
@@ -51,6 +58,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
     'create-data-object-dialog': CreateDataObjectDialog,
     'description-dialog': DescriptionDialog,
     'preview-dialog': PreviewDialog,
+    'settings-dialog': SettingsDialog,
   };
 
   @property({ attribute: false })
@@ -70,6 +78,9 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
 
   @query('preview-dialog')
   previewDialog!: PreviewDialog;
+
+  @query('settings-dialog')
+  settingsDialog!: SettingsDialog;
 
   @state()
   get selection(): TreeSelection {
@@ -111,6 +122,27 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
   @state()
   snackbarType: 'success' | 'error' = 'success';
 
+  // eslint-disable-next-line class-methods-use-this
+  get lNodeTypeIdSetting(): string {
+    return localStorage.getItem(STORAGE_KEY_LNODETYPE_ID_SETTING) || 'random';
+  }
+
+  private generateRandomId(): string {
+    let id: string;
+    do {
+      const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+        /[xy]/g,
+        c => {
+          const r = Math.floor(Math.random() * 16);
+          const v = c === 'x' ? r : (r % 4) + 8;
+          return v.toString(16);
+        }
+      );
+      id = `${this.lNodeType}€${uuid}`;
+    } while (this.doc?.querySelector(`LNodeType[id="${id}"]`));
+    return id;
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     lastSelection = this.selection;
@@ -132,12 +164,29 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
     this.autoSelectEnums();
   }
 
-  saveTemplates(description: string) {
+  saveTemplates(description: string, id?: string) {
     if (!this.doc) return;
+
+    let lNodeTypeId: string | undefined;
+
+    switch (this.lNodeTypeIdSetting) {
+      case 'user':
+        lNodeTypeId = id;
+        break;
+      case 'random':
+        lNodeTypeId = this.generateRandomId();
+        break;
+      case 'content-hash':
+        lNodeTypeId = undefined; // Leave undefined, scl-lib will auto-generate id from content hash
+        break;
+      default:
+        lNodeTypeId = this.generateRandomId();
+    }
 
     const inserts = insertSelectedLNodeType(this.doc, this.treeUI.selection, {
       class: this.lNodeType,
       ...(description !== undefined && { desc: description }),
+      ...(lNodeTypeId !== undefined && { id: lNodeTypeId }),
       data: this.treeUI.tree as LNodeDescription,
     });
 
@@ -309,9 +358,17 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
       </div>
       ${this.doc
         ? html`<div class="fab-wrapper">
-            <md-fab @click=${() => this.showPreview()} title="Preview">
-              <md-icon slot="icon">preview</md-icon>
-            </md-fab>
+            <div>
+              <md-icon-button @click=${() => this.settingsDialog.show()}>
+                <md-icon>settings</md-icon>
+              </md-icon-button>
+              <md-icon-button
+                @click=${() => this.showPreview()}
+                title="Preview"
+              >
+                <md-icon>preview</md-icon>
+              </md-icon-button>
+            </div>
             <md-fab
               label="${this.addedLNode || 'Add Type'}"
               @click=${() => this.descriptionDialog.show()}
@@ -326,13 +383,16 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
         .onConfirm=${this.handleDOConfirm}
       ></create-data-object-dialog>
       <description-dialog
-        .onConfirm=${(description: string) => this.saveTemplates(description)}
+        .doc=${this.doc}
+        .onConfirm=${(description: string, id?: string) =>
+          this.saveTemplates(description, id)}
         .onCancel=${() => this.descriptionDialog.close()}
       ></description-dialog>
       <preview-dialog
         .tree=${this.treeUI?.tree}
         .lNodeType=${this.lNodeType}
       ></preview-dialog>
+      <settings-dialog></settings-dialog>
       <oscd-snackbar
         .message=${this.snackbarMessage}
         .type=${this.snackbarType}
@@ -376,6 +436,7 @@ export default class TemplateGenerator extends ScopedElementsMixin(LitElement) {
 
     .fab-wrapper {
       position: fixed;
+      align-items: center;
       bottom: 32px;
       right: 32px;
       display: flex;
